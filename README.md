@@ -9,6 +9,7 @@ PROJETO WEB PARA CRIAÇÃO DE CURRICULO
     - pymongo
     - pillow
     - pycep-correios
+    - validate_docbr
     - requests (opcional uso somente para testes)
 
 Também é necessário ter acesso a um banco de dados MongoDB
