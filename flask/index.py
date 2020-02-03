@@ -6,10 +6,12 @@ Autor:	Marcos Felipe da Silva Jardim
 from flask import Flask, render_template, session, request, url_for, redirect
 import config, modelo, time, sys, json, re, requests, os
 from time import time
+from datetime import datetime
 from bson import ObjectId
 from hashlib import sha1
 from PIL import Image, ExifTags
 import pycep_correios
+from validate_docbr import CPF
 
 app = Flask(__name__)
 #app.register_blueprint(vendas)
@@ -56,6 +58,32 @@ def trabalhe_conosco():
     if request.method == 'GET':
         return render_template('index.html')
     if request.method == 'POST': # Registrando um curriculo
+        if not 'dados' in request.form.keys():
+            return json.dumps({'erro': 'FAVOR ENVIAR EM UM CAMPO dados'})
+        try:
+            dados = json.loads(request.form['dados'])
+        except json.JSONDecodeError:
+            return json.dumps({'erro': 'OS DADOS DEVEM SER UM JSON'})
+        # Agora veja se o atributo nome existe
+        if not 'nome' in dados.keys(): return json.dumps({'erro': 'SEM NOME A SER ENVIADO'})
+        # Verificar se o campo nome esta vazio
+        if len(dados['nome'].strip()) < 5: return json.dumps({'erro': 'FAVOR INFORMAR UM NOME COMPLETO OU COM MAIS DE 5 LETRAS'})
+        # Verificar se existe o campo cpf
+        if not 'cpf' in dados.keys(): return json.dumps({'erro': 'CPF É OBRIGATÓRIO'})
+        # Verifica se ele tem 11 digitos
+        regex = re.compile('[0-9]{11}')
+        if not regex.match(dados['cpf']): return json.dumps({'erro': 'O CPF DEVE TER 11 DIGITOS'})
+        # Verifica se ele passa pelo validaddor
+        cpf = CPF(repeated_digits=True) # Por enquanto permitir numeros repetidos
+        if not cpf.validate(dados['cpf']): return json.dumps({'erro': 'O CPF ENVIADO NÃO É VALIDO'})
+        # Atributo nascimento ausente
+        if not 'nascimento' in dados.keys(): return json.dumps({'erro': 'NASCIMENTO AUSENTE'})
+        if not modelo.Utils.validar_data(dados['nascimento']): return json.dumps({'erro': 'DATA FORA DO PADRÃO AAAA-MM-DD'})
+        # O nascimento deve ser menor que o dia de hoje
+        dAtual = datetime.now()
+        dEnviado = datetime(*[int(val) for val in dados['nascimento'].split('-')])
+        if dAtual <= dEnviado: return json.dumps({'erro': 'A DATA DE NASCIMENTO É MAIOR QUE A DATA ATUAL'})
+
         return json.dumps({})
 
 @app.route('/info_curriculo', methods = ['GET'])

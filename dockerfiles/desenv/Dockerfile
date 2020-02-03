@@ -1,7 +1,7 @@
 FROM python:3.5
 
 RUN apt-get update && apt-get install tzdata && apt-get clean && \
-pip3 install gunicorn flask pymongo pillow pycep-correios requests
+pip3 install gunicorn flask pymongo pillow pycep-correios requests validate-docbr
 
 ENV TZ='America/Sao_Paulo'
 

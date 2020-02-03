@@ -107,4 +107,11 @@ class Utils:
     @staticmethod
     def arquivos_permitidos(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in FORMATOS
-    
+    @staticmethod
+    def validar_data(data):
+        ''' Valida a data para ver se segue o padrao AAAA-MM-DD'''
+        # VEJA NA regex SE O CAMPO DE E ATE ATENDEM O PADRÃO DE DATA
+        cp = re.compile('^[1-2][0-9]{3}-([0][0-9]|[1][0-2])-([0-2][0-9]|[3][0-1])$')
+        if not cp.match(data):
+            return False
+        return True
